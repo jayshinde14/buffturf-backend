@@ -68,4 +68,60 @@ public class AdminController {
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userRepository.findAll());
     }
+    @GetMapping("/earnings")
+    public ResponseEntity<Map<String, Object>> getEarnings() {
+        List<Booking> allBookings = bookingRepository.findAll();
+        List<Booking> confirmed = allBookings.stream()
+                .filter(b -> b.getStatus() == Booking.BookingStatus.CONFIRMED)
+                .collect(java.util.stream.Collectors.toList());
+
+        // Total revenue
+        double totalRevenue = confirmed.stream()
+                .mapToDouble(b -> b.getTurf() != null ? b.getTurf().getPricePerHour() : 0)
+                .sum();
+
+        // Today's revenue
+        double todayRevenue = confirmed.stream()
+                .filter(b -> b.getBookingDate() != null &&
+                        b.getBookingDate().equals(LocalDate.now()))
+                .mapToDouble(b -> b.getTurf() != null ? b.getTurf().getPricePerHour() : 0)
+                .sum();
+
+        // This month's revenue
+        double monthRevenue = confirmed.stream()
+                .filter(b -> b.getBookingDate() != null &&
+                        b.getBookingDate().getMonth() == LocalDate.now().getMonth() &&
+                        b.getBookingDate().getYear() == LocalDate.now().getYear())
+                .mapToDouble(b -> b.getTurf() != null ? b.getTurf().getPricePerHour() : 0)
+                .sum();
+
+        // Per turf breakdown
+        Map<String, Map<String, Object>> turfEarnings = new HashMap<>();
+        for (Booking b : confirmed) {
+            if (b.getTurf() == null) continue;
+            String turfName = b.getTurf().getName();
+            turfEarnings.putIfAbsent(turfName, new HashMap<>());
+            Map<String, Object> turfData = turfEarnings.get(turfName);
+            turfData.put("turfName", turfName);
+            turfData.put("location", b.getTurf().getLocation());
+            turfData.put("sportType", b.getTurf().getSportType());
+            turfData.put("pricePerHour", b.getTurf().getPricePerHour());
+            int count = (int) turfData.getOrDefault("bookingCount", 0) + 1;
+            double earned = (double) turfData.getOrDefault("totalEarned", 0.0) + b.getTurf().getPricePerHour();
+            turfData.put("bookingCount", count);
+            turfData.put("totalEarned", earned);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalRevenue", totalRevenue);
+        response.put("todayRevenue", todayRevenue);
+        response.put("monthRevenue", monthRevenue);
+        response.put("confirmedBookings", confirmed.size());
+        response.put("turfBreakdown", turfEarnings.values());
+        response.put("recentPayments", confirmed.stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .limit(10)
+                .collect(java.util.stream.Collectors.toList()));
+        return ResponseEntity.ok(response);
+    }
 }
