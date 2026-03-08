@@ -45,6 +45,15 @@ public class Booking {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "payment_id")
+    private String paymentId;
+
+    @Column(name = "payment_status")
+    private String paymentStatus;
+
+    @Column(name = "amount_paid")
+    private Double amountPaid;
+
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Player> players;
 
@@ -88,4 +97,12 @@ public class Booking {
 
     public List<Player> getPlayers() { return players; }
     public void setPlayers(List<Player> players) { this.players = players; }
+    public String getPaymentId() { return paymentId; }
+    public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
+
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+
+    public Double getAmountPaid() { return amountPaid; }
+    public void setAmountPaid(Double amountPaid) { this.amountPaid = amountPaid; }
 }
