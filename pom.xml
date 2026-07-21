@@ -91,6 +91,19 @@
             <version>1.4.3</version>
         </dependency>
 
+        <!-- Email (Gmail SMTP) - Free -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+
+        <!-- Load .env variables -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>
+        </dependency>
 
     </dependencies>
 

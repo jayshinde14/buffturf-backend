@@ -24,19 +24,18 @@ public class Booking {
     @JsonIgnoreProperties({"slots", "bookings"})
     private Turf turf;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "slot_id", nullable = false)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "booking_slots",
+        joinColumns = @JoinColumn(name = "booking_id"),
+        inverseJoinColumns = @JoinColumn(name = "slot_id"))
     @JsonIgnoreProperties({"turf", "booking"})
-    private Slot slot;
+    private List<Slot> slots;
 
     @Column(name = "booking_date", nullable = false)
     private LocalDate bookingDate;
 
     @Column(name = "booking_code", nullable = false, unique = true)
     private String bookingCode;
-
-    @Column(name = "qr_code", columnDefinition = "LONGTEXT")
-    private String qrCode;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -55,7 +54,7 @@ public class Booking {
     private Double amountPaid;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Player> players;
+    private List<Participant> participants;
 
     public enum BookingStatus {
         CONFIRMED, CANCELLED, COMPLETED
@@ -77,8 +76,8 @@ public class Booking {
     public Turf getTurf() { return turf; }
     public void setTurf(Turf turf) { this.turf = turf; }
 
-    public Slot getSlot() { return slot; }
-    public void setSlot(Slot slot) { this.slot = slot; }
+    public List<Slot> getSlots() { return slots; }
+    public void setSlots(List<Slot> slots) { this.slots = slots; }
 
     public LocalDate getBookingDate() { return bookingDate; }
     public void setBookingDate(LocalDate bookingDate) { this.bookingDate = bookingDate; }
@@ -86,17 +85,14 @@ public class Booking {
     public String getBookingCode() { return bookingCode; }
     public void setBookingCode(String bookingCode) { this.bookingCode = bookingCode; }
 
-    public String getQrCode() { return qrCode; }
-    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
-
     public BookingStatus getStatus() { return status; }
     public void setStatus(BookingStatus status) { this.status = status; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public List<Player> getPlayers() { return players; }
-    public void setPlayers(List<Player> players) { this.players = players; }
+    public List<Participant> getParticipants() { return participants; }
+    public void setParticipants(List<Participant> participants) { this.participants = participants; }
     public String getPaymentId() { return paymentId; }
     public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
 

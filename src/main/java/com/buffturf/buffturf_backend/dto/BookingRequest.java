@@ -10,8 +10,9 @@ public class BookingRequest {
     @NotNull(message = "Turf ID is required")
     private Long turfId;
 
-    @NotNull(message = "Slot ID is required")
-    private Long slotId;
+    @NotNull(message = "Slot IDs are required")
+    @Size(min = 1, max = 3, message = "You can select between 1 and 3 slots")
+    private List<Long> slotIds;
 
     @NotNull(message = "Booking date is required")
     private LocalDate bookingDate;
@@ -24,8 +25,8 @@ public class BookingRequest {
     public Long getTurfId() { return turfId; }
     public void setTurfId(Long turfId) { this.turfId = turfId; }
 
-    public Long getSlotId() { return slotId; }
-    public void setSlotId(Long slotId) { this.slotId = slotId; }
+    public List<Long> getSlotIds() { return slotIds; }
+    public void setSlotIds(List<Long> slotIds) { this.slotIds = slotIds; }
 
     public LocalDate getBookingDate() { return bookingDate; }
     public void setBookingDate(LocalDate bookingDate) { this.bookingDate = bookingDate; }

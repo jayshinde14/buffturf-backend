@@ -81,9 +81,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/turfs/**").permitAll()
+                        .requestMatchers("/api/chat", "/api/chat/**").permitAll()
+                        .requestMatchers("/api/bookings/verify/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/turfs/**").permitAll()
                         .requestMatchers("/api/payments/**").authenticated()
                         .anyRequest().authenticated()
                 )
