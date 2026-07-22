@@ -60,8 +60,16 @@ public class BuffturfBackendApplication {
 
 	@Bean
 	CommandLineRunner createAdmin(UserRepository userRepository,
-								  PasswordEncoder passwordEncoder) {
+								  PasswordEncoder passwordEncoder,
+								  org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
 		return args -> {
+			try {
+				jdbcTemplate.execute("ALTER TABLE bookings DROP COLUMN slot_id");
+				System.out.println("✅ Successfully dropped old slot_id column from bookings table!");
+			} catch (Exception e) {
+				System.out.println("ℹ️ Database schema is already clean (no old slot_id column found).");
+			}
+			
 			if (!userRepository.existsByUsername("admin")) {
 				User admin = new User();
 				admin.setUsername("admin");
