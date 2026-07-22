@@ -64,10 +64,22 @@ public class BuffturfBackendApplication {
 								  org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
 		return args -> {
 			try {
+				// 1. Find the foreign key constraint name for slot_id in the bookings table
+				String fkQuery = "SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE " +
+								 "WHERE TABLE_NAME = 'bookings' AND COLUMN_NAME = 'slot_id' AND CONSTRAINT_NAME != 'PRIMARY'";
+				java.util.List<String> fkNames = jdbcTemplate.queryForList(fkQuery, String.class);
+				
+				// 2. Drop the foreign key constraint if it exists
+				for (String fkName : fkNames) {
+					jdbcTemplate.execute("ALTER TABLE bookings DROP FOREIGN KEY " + fkName);
+					System.out.println("✅ Dropped foreign key constraint: " + fkName);
+				}
+
+				// 3. Drop the column
 				jdbcTemplate.execute("ALTER TABLE bookings DROP COLUMN slot_id");
 				System.out.println("✅ Successfully dropped old slot_id column from bookings table!");
 			} catch (Exception e) {
-				System.out.println("ℹ️ Database schema is already clean (no old slot_id column found).");
+				System.out.println("ℹ️ Database schema is already clean (no old slot_id column found or already dropped). Details: " + e.getMessage());
 			}
 			
 			if (!userRepository.existsByUsername("admin")) {
