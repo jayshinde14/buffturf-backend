@@ -271,10 +271,23 @@ public class BookingServiceImpl implements BookingService {
             LocalTime graceStart = startTime.minusMinutes(30);
             LocalTime graceEnd = endTime.plusMinutes(30);
 
-            if (now.isBefore(graceStart)) {
+            boolean isTooEarly;
+            boolean isExpired;
+
+            if (graceStart.isBefore(graceEnd)) {
+                // Normal same-day window
+                isTooEarly = now.isBefore(graceStart);
+                isExpired = now.isAfter(graceEnd);
+            } else {
+                // Window wraps around midnight (e.g. 23:00 to 01:00)
+                isTooEarly = now.isBefore(graceStart) && now.isAfter(graceEnd);
+                isExpired = now.isAfter(graceEnd) && now.isBefore(graceStart);
+            }
+
+            if (isTooEarly) {
                 validationStatus = "TIME_CONFLICT";
                 validationMessage = "Entry Denied: Too early. Slot starts at " + startTime + " (Grace entry starts at " + graceStart + ").";
-            } else if (now.isAfter(graceEnd)) {
+            } else if (isExpired) {
                 validationStatus = "TIME_CONFLICT";
                 validationMessage = "Entry Denied: Expired. Slot ended at " + endTime + " (Grace entry closed at " + graceEnd + ").";
             }
