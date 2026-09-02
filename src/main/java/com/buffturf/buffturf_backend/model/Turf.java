@@ -42,6 +42,12 @@ public class Turf {
     @JsonIgnore
     @OneToMany(mappedBy = "turf", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Slot> slots;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"password", "bookings"})
+    private User owner;
+
     public Turf() {}
 
     public Long getId() { return id; }
@@ -76,4 +82,7 @@ public class Turf {
 
     public List<Slot> getSlots() { return slots; }
     public void setSlots(List<Slot> slots) { this.slots = slots; }
+
+    public User getOwner() { return owner; }
+    public void setOwner(User owner) { this.owner = owner; }
 }

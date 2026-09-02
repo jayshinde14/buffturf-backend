@@ -1,5 +1,7 @@
 package com.buffturf.buffturf_backend.controller;
 
+import com.buffturf.buffturf_backend.dto.TurfOwnerDto;
+import com.buffturf.buffturf_backend.model.AuditLog;
 import com.buffturf.buffturf_backend.model.Booking;
 import com.buffturf.buffturf_backend.model.User;
 import com.buffturf.buffturf_backend.service.AdminService;
@@ -57,4 +59,20 @@ public class AdminController {
         adminService.toggleUserBanStatus(id);
         return ResponseEntity.ok(Map.of("message", "User ban status toggled successfully"));
     }
+
+    @GetMapping("/audit-logs")
+    public ResponseEntity<List<AuditLog>> getAuditLogs() {
+        return ResponseEntity.ok(adminService.getAuditLogs());
+    }
+
+    @GetMapping("/owners")
+    public ResponseEntity<List<TurfOwnerDto>> getAllTurfOwners() {
+        return ResponseEntity.ok(adminService.getAllTurfOwners());
+    }
+
+    @PostMapping("/owners")
+    public ResponseEntity<TurfOwnerDto> createTurfOwner(@RequestBody TurfOwnerDto dto) {
+        return ResponseEntity.ok(adminService.createTurfOwner(dto));
+    }
 }
+

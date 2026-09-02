@@ -31,7 +31,7 @@ public class User {
     private boolean isBanned = false;
 
     public enum Role {
-        USER, ADMIN
+        USER, TURF_OWNER, ADMIN
     }
 
     public User() {}

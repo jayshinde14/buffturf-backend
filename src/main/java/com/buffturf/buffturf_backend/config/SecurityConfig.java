@@ -81,10 +81,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/turfs/**").permitAll()
+                        .requestMatchers("/api/recommend").permitAll()
                         .requestMatchers("/api/chat", "/api/chat/**").permitAll()
                         .requestMatchers("/api/bookings/verify/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/owner/**").hasAnyRole("TURF_OWNER", "ADMIN")
                         .requestMatchers("/api/payments/**").authenticated()
                         .anyRequest().authenticated()
                 )

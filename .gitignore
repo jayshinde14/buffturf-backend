@@ -35,3 +35,7 @@ build/
 .env
 *.class
 *.txt
+*.log
+log_tail*.txt
+DeleteUser.*
+*.sql

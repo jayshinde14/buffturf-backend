@@ -1,0 +1,5 @@
+target
+.git
+.idea
+*.log
+log_tail*.txt

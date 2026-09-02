@@ -54,7 +54,7 @@ public class QrController {
         QrPass qrPass = qrPassOpt.get();
         Participant participant = qrPass.getParticipant();
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
 
         // Validate time
         if (now.isBefore(qrPass.getValidFrom())) {

@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.buffturf.buffturf_backend.service.SlotLockService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -28,6 +29,7 @@ public class BookingServiceImpl implements BookingService {
     private final QrPassRepository qrPassRepository;
     private final QrService qrService;
     private final EmailService emailService;
+    private final SlotLockService slotLockService;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               TurfRepository turfRepository,
@@ -35,7 +37,8 @@ public class BookingServiceImpl implements BookingService {
                               UserRepository userRepository,
                               QrPassRepository qrPassRepository,
                               QrService qrService,
-                              EmailService emailService) {
+                              EmailService emailService,
+                              SlotLockService slotLockService) {
         this.bookingRepository = bookingRepository;
         this.turfRepository = turfRepository;
         this.slotRepository = slotRepository;
@@ -43,6 +46,7 @@ public class BookingServiceImpl implements BookingService {
         this.qrPassRepository = qrPassRepository;
         this.qrService = qrService;
         this.emailService = emailService;
+        this.slotLockService = slotLockService;
     }
 
     @Override
@@ -70,10 +74,15 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        java.time.ZoneId istZone = java.time.ZoneId.of("Asia/Kolkata");
+        LocalDateTime now = LocalDateTime.now(istZone);
         for (Slot slot : slots) {
             if (!slot.getIsAvailable()) {
                 throw new ApiException("One or more slots are already booked!", HttpStatus.BAD_REQUEST);
+            }
+            String lockOwner = slotLockService.getLockOwner(slot.getId());
+            if (lockOwner != null && !lockOwner.equalsIgnoreCase(email)) {
+                throw new ApiException("Slot #" + slot.getId() + " is currently in checkout by another customer.", HttpStatus.CONFLICT);
             }
             LocalDateTime slotDateTime = LocalDateTime.of(request.getBookingDate(), slot.getStartTime());
             if (slotDateTime.isBefore(now)) {
@@ -184,7 +193,12 @@ public class BookingServiceImpl implements BookingService {
             System.err.println("❌ Failed to send booking confirmation email: " + e.getMessage());
         }
 
-
+        // Clean up temporary Redis distributed locks on confirmed booking
+        try {
+            slotLockService.forceRelease(request.getSlotIds());
+        } catch (Exception e) {
+            System.err.println("⚠️ Non-critical: Failed to release Redis lock after booking: " + e.getMessage());
+        }
 
         return savedBooking;
     }
@@ -243,8 +257,9 @@ public class BookingServiceImpl implements BookingService {
         
         // This method will be mostly superceded by the individual QR scanning, but we leave it for backwards compatibility
 
-        LocalDate today = LocalDate.now();
-        LocalTime now = LocalTime.now();
+        java.time.ZoneId istZone = java.time.ZoneId.of("Asia/Kolkata");
+        LocalDate today = LocalDate.now(istZone);
+        LocalTime now = LocalTime.now(istZone);
         LocalDate bookingDate = booking.getBookingDate();
         List<Slot> slots = booking.getSlots();
         LocalTime startTime = slots.stream().map(Slot::getStartTime).min(LocalTime::compareTo).orElse(LocalTime.MIDNIGHT);

@@ -93,6 +93,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtils.generateToken(userDetails);
 
         AuthResponse response = new AuthResponse();
+        response.setId(user.getId());
         response.setToken(token);
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
@@ -124,6 +125,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         AuthResponse response = new AuthResponse();
+        response.setId(user.getId());
         response.setToken(token);
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());

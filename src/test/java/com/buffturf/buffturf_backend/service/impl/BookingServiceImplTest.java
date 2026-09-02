@@ -7,6 +7,7 @@ import com.buffturf.buffturf_backend.model.*;
 import com.buffturf.buffturf_backend.repository.*;
 import com.buffturf.buffturf_backend.service.EmailService;
 import com.buffturf.buffturf_backend.service.QrService;
+import com.buffturf.buffturf_backend.service.SlotLockService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,8 @@ class BookingServiceImplTest {
     private QrService qrService;
     @Mock
     private EmailService emailService;
+    @Mock
+    private SlotLockService slotLockService;
 
     @InjectMocks
     private BookingServiceImpl bookingService;
@@ -377,7 +380,9 @@ class BookingServiceImplTest {
             LocalDate fixedToday = LocalDate.of(2024, 1, 1);
             LocalTime fixedNow = LocalTime.of(12, 0);
             mockedDate.when(LocalDate::now).thenReturn(fixedToday);
+            mockedDate.when(() -> LocalDate.now(any(java.time.ZoneId.class))).thenReturn(fixedToday);
             mockedTime.when(LocalTime::now).thenReturn(fixedNow);
+            mockedTime.when(() -> LocalTime.now(any(java.time.ZoneId.class))).thenReturn(fixedNow);
 
             testBooking.setBookingDate(fixedToday);
             testSlot1.setStartTime(LocalTime.of(14, 0)); // 2 hours from now
@@ -400,7 +405,9 @@ class BookingServiceImplTest {
             LocalDate fixedToday = LocalDate.of(2024, 1, 1);
             LocalTime fixedNow = LocalTime.of(12, 0);
             mockedDate.when(LocalDate::now).thenReturn(fixedToday);
+            mockedDate.when(() -> LocalDate.now(any(java.time.ZoneId.class))).thenReturn(fixedToday);
             mockedTime.when(LocalTime::now).thenReturn(fixedNow);
+            mockedTime.when(() -> LocalTime.now(any(java.time.ZoneId.class))).thenReturn(fixedNow);
 
             testBooking.setBookingDate(fixedToday);
             testSlot1.setStartTime(LocalTime.of(9, 0)); // 3 hours ago
@@ -423,7 +430,9 @@ class BookingServiceImplTest {
             LocalDate fixedToday = LocalDate.of(2024, 1, 1);
             LocalTime fixedNow = LocalTime.of(12, 0);
             mockedDate.when(LocalDate::now).thenReturn(fixedToday);
+            mockedDate.when(() -> LocalDate.now(any(java.time.ZoneId.class))).thenReturn(fixedToday);
             mockedTime.when(LocalTime::now).thenReturn(fixedNow);
+            mockedTime.when(() -> LocalTime.now(any(java.time.ZoneId.class))).thenReturn(fixedNow);
 
             testBooking.setBookingDate(fixedToday);
             testSlot1.setStartTime(LocalTime.of(11, 50)); // started 10 mins ago

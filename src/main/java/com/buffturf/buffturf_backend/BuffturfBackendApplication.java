@@ -60,18 +60,20 @@ public class BuffturfBackendApplication {
 
 	@Bean
 	CommandLineRunner createAdmin(UserRepository userRepository,
+								  com.buffturf.buffturf_backend.repository.TurfRepository turfRepository,
 								  PasswordEncoder passwordEncoder,
 								  org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
 		return args -> {
 			try {
-				// Safely modify the legacy slot_id column to allow NULL values
-				// This prevents "Field 'slot_id' doesn't have a default value" errors during new bookings
+				// Safely modify legacy columns
 				jdbcTemplate.execute("ALTER TABLE bookings MODIFY COLUMN slot_id bigint NULL");
-				System.out.println("✅ Successfully modified old slot_id column to allow NULL values!");
+				jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) NOT NULL");
+				System.out.println("✅ Successfully updated schema constraints!");
 			} catch (Exception e) {
 				System.out.println("ℹ️ Database schema is already clean or modification failed. Details: " + e.getMessage());
 			}
 			
+			// 1. Seed Super Admin
 			if (!userRepository.existsByUsername("admin")) {
 				User admin = new User();
 				admin.setUsername("admin");
@@ -80,9 +82,50 @@ public class BuffturfBackendApplication {
 				admin.setRole(User.Role.ADMIN);
 				admin.setPhoneNumber("9999999999");
 				userRepository.save(admin);
-				System.out.println("✅ Admin created successfully!");
+				System.out.println("✅ Super Admin created: admin@buffturf.com / admin123");
 			} else {
 				System.out.println("✅ Admin already exists!");
+			}
+
+			// 2. Seed Default Turf Owners for Multi-Tenant Testing
+			java.util.List<com.buffturf.buffturf_backend.model.Turf> turfs = turfRepository.findAll();
+			for (com.buffturf.buffturf_backend.model.Turf turf : turfs) {
+				if (turf.getOwner() == null) {
+					String safeName = turf.getName().toLowerCase().replaceAll("[^a-z0-9]", "");
+					if (safeName.isEmpty()) safeName = "turf" + turf.getId();
+					String ownerUsername = "owner_" + safeName;
+					String ownerEmail = "owner." + safeName + "@buffturf.com";
+
+					User owner = userRepository.findByEmail(ownerEmail).orElse(null);
+					if (owner == null) {
+						owner = new User();
+						owner.setUsername(ownerUsername);
+						owner.setEmail(ownerEmail);
+						owner.setPassword(passwordEncoder.encode("owner123"));
+						owner.setRole(User.Role.TURF_OWNER);
+						owner.setPhoneNumber("9888888888");
+						owner = userRepository.save(owner);
+						System.out.println("✅ Seeded Turf Owner: " + ownerEmail + " (Password: owner123) for Turf: " + turf.getName());
+					}
+					turf.setOwner(owner);
+					turfRepository.save(turf);
+				}
+			}
+
+			// Also ensure a standard demo owner "owner@buffturf.com" exists
+			if (!userRepository.existsByEmail("owner@buffturf.com")) {
+				User demoOwner = new User();
+				demoOwner.setUsername("turf_owner");
+				demoOwner.setEmail("owner@buffturf.com");
+				demoOwner.setPassword(passwordEncoder.encode("owner123"));
+				demoOwner.setRole(User.Role.TURF_OWNER);
+				demoOwner.setPhoneNumber("9876543210");
+				demoOwner = userRepository.save(demoOwner);
+				if (!turfs.isEmpty() && turfs.get(0).getOwner() == null) {
+					turfs.get(0).setOwner(demoOwner);
+					turfRepository.save(turfs.get(0));
+				}
+				System.out.println("✅ Standard Demo Turf Owner created: owner@buffturf.com / owner123");
 			}
 		};
 	}
