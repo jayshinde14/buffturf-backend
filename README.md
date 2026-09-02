@@ -180,6 +180,10 @@ HTML coverage reports are generated at `target/site/jacoco/index.html`.
 
 ---
 
-## 📄 License
+## 📄 Copyright & Proprietary Rights
 
-Distributed under the **MIT License**.
+**Copyright © 2026 Jay Shinde. All Rights Reserved.**
+
+This project, its backend architecture, database models, algorithms, and source code are the exclusive intellectual property of **Jay Shinde**.
+* **Viewing & Evaluation:** You are granted permission to view and examine this repository for portfolio review, recruitment, and technical evaluation purposes.
+* **Restrictions:** Unauthorized copying, reproduction, modification, redistribution, sublicensing, reverse engineering, or commercial use of any portion of this codebase without prior written permission from the copyright owner is strictly prohibited.
