@@ -20,8 +20,11 @@ public class ChatController {
     }
 
     @PostMapping
-    public ResponseEntity<ChatResponse> chat(@RequestBody ChatRequest chatRequest) {
-        ChatResponse response = chatService.handleChat(chatRequest);
+    public ResponseEntity<ChatResponse> chat(
+            @RequestBody ChatRequest chatRequest,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
+        String userEmail = userDetails != null ? userDetails.getUsername() : null;
+        ChatResponse response = chatService.handleChat(chatRequest, userEmail);
         return ResponseEntity.ok(response);
     }
 }

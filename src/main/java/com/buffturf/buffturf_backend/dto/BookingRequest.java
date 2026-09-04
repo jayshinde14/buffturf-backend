@@ -40,6 +40,7 @@ public class BookingRequest {
         private Integer age;
         private String gender;
         private String contact;
+        private String email;
         private String governmentId;
 
         public PlayerRequest() {}
@@ -55,6 +56,9 @@ public class BookingRequest {
 
         public String getContact() { return contact; }
         public void setContact(String contact) { this.contact = contact; }
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
 
         public String getGovernmentId() { return governmentId; }
         public void setGovernmentId(String governmentId) { this.governmentId = governmentId; }

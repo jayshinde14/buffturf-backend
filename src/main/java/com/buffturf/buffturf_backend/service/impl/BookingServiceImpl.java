@@ -114,24 +114,50 @@ public class BookingServiceImpl implements BookingService {
             Participant mainParticipant = new Participant();
             mainParticipant.setBooking(booking);
             mainParticipant.setFullName(mainReq.getName() != null && !mainReq.getName().trim().isEmpty() ? mainReq.getName() : user.getUsername());
-            mainParticipant.setAge(mainReq.getAge());
+            mainParticipant.setAge(mainReq.getAge() != null ? mainReq.getAge() : 25);
             mainParticipant.setGender(mainReq.getGender() != null ? mainReq.getGender() : "Male");
-            mainParticipant.setPhone(mainReq.getContact() != null ? mainReq.getContact() : user.getPhoneNumber());
+            mainParticipant.setPhone(mainReq.getContact() != null && !mainReq.getContact().trim().isEmpty() ? mainReq.getContact() : user.getPhoneNumber());
+            mainParticipant.setEmail(user.getEmail());
             mainParticipant.setIdHash(mainReq.getGovernmentId());
             mainParticipant.setVerified(true);
             participants.add(mainParticipant);
 
-            // 2. Add Friends
+            // 2. Add Friends (Strictly Enforce Registered Buffturf Users)
+            Set<String> addedEmails = new HashSet<>();
+            addedEmails.add(user.getEmail().trim().toLowerCase());
+
             for (int i = 1; i < request.getPlayers().size(); i++) {
                 BookingRequest.PlayerRequest p = request.getPlayers().get(i);
+                
+                String friendEmail = p.getEmail() != null ? p.getEmail().trim().toLowerCase() : "";
+                if (friendEmail.isEmpty()) {
+                    throw new ApiException("Every squad friend must have a registered Buffturf email address.", HttpStatus.BAD_REQUEST);
+                }
+
+                if (addedEmails.contains(friendEmail)) {
+                    throw new ApiException("Duplicate player email in squad roster: " + friendEmail, HttpStatus.BAD_REQUEST);
+                }
+                addedEmails.add(friendEmail);
+
+                User friendUser = userRepository.findByEmail(friendEmail)
+                        .orElseThrow(() -> new ApiException(
+                                "Teammate with email '" + friendEmail + "' is not registered on Buffturf. Friends must have an active Buffturf account.",
+                                HttpStatus.BAD_REQUEST
+                        ));
+
+                if (friendUser.isBanned()) {
+                    throw new ApiException("Teammate '" + friendUser.getUsername() + "' (" + friendEmail + ") has a suspended account and cannot be added.", HttpStatus.BAD_REQUEST);
+                }
+
                 Participant friend = new Participant();
                 friend.setBooking(booking);
-                friend.setFullName(p.getName());
-                friend.setAge(p.getAge());
-                friend.setGender(p.getGender());
-                friend.setPhone(p.getContact());
+                friend.setFullName(p.getName() != null && !p.getName().trim().isEmpty() ? p.getName() : friendUser.getUsername());
+                friend.setAge(p.getAge() != null ? p.getAge() : 25);
+                friend.setGender(p.getGender() != null ? p.getGender() : "Male");
+                friend.setPhone(p.getContact() != null && !p.getContact().trim().isEmpty() ? p.getContact() : friendUser.getPhoneNumber());
+                friend.setEmail(friendUser.getEmail());
                 friend.setIdHash(p.getGovernmentId());
-                friend.setVerified(false);
+                friend.setVerified(true); // Verified registered player
                 participants.add(friend);
             }
         } else {
@@ -142,6 +168,7 @@ public class BookingServiceImpl implements BookingService {
             mainParticipant.setAge(25); // Default
             mainParticipant.setGender("Male"); // Default
             mainParticipant.setPhone(user.getPhoneNumber());
+            mainParticipant.setEmail(user.getEmail());
             mainParticipant.setVerified(true);
             participants.add(mainParticipant);
         }

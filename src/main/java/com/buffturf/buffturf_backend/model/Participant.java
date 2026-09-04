@@ -28,6 +28,9 @@ public class Participant {
     @Column
     private String phone;
 
+    @Column
+    private String email;
+
     @Column(name = "id_hash")
     private String idHash;
 
@@ -56,6 +59,9 @@ public class Participant {
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
     public String getIdHash() { return idHash; }
     public void setIdHash(String idHash) { this.idHash = idHash; }
